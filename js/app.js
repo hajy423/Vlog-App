@@ -17,6 +17,30 @@ const RING_LEN = 289; // 2 * PI * r(46), matches stroke-dasharray in CSS
 const recorder = new Recorder(previewEl);
 let activeRecording = null;
 
+/* ============ Free / Pro ============ */
+// Change APP_NAME once the final name is chosen — it's the free-plan watermark.
+const APP_NAME = 'Daily Vlog';
+const FREE_STITCH_LIMIT = 15;
+const PRO_KEY = 'vlog-pro';
+
+const isPro = () => localStorage.getItem(PRO_KEY) === '1';
+
+function openUpgrade(lead) {
+  $('upgrade-lead').textContent = lead;
+  $('upgrade-modal').classList.remove('hidden');
+}
+
+$('btn-close-upgrade').addEventListener('click', () => $('upgrade-modal').classList.add('hidden'));
+
+$('btn-buy-pro').addEventListener('click', () => {
+  // Payment stub: replace with real store billing (Play Billing / StoreKit)
+  // when the app ships to a store.
+  localStorage.setItem(PRO_KEY, '1');
+  $('upgrade-modal').classList.add('hidden');
+  toast('Pro unlocked ✨');
+  renderClips();
+});
+
 /* ============ Mode (aspect / orientation) ============ */
 const MODE_LABELS = {
   vertical: '9:16',
@@ -248,6 +272,7 @@ async function renderClips() {
     ? `${clipsCache.length} clip${clipsCache.length === 1 ? '' : 's'}`
     : '';
   $('clips-empty').classList.toggle('hidden', clipsCache.length > 0);
+  $('btn-pro').classList.toggle('hidden', isPro());
   $('btn-select').classList.toggle('hidden', !clipsCache.length);
   $('btn-select').textContent = selectMode ? 'Cancel' : 'Select';
   $('btn-select-all').classList.toggle('hidden', !selectMode);
@@ -372,9 +397,20 @@ $('btn-delete-clip').addEventListener('click', async () => {
 let stitchAbort = null;
 let stitchUrl = null;
 
+$('btn-pro').addEventListener('click', () =>
+  openUpgrade(`Everything in ${APP_NAME} is free — Pro removes the watermark and lets you stitch your whole archive at once.`)
+);
+
 $('btn-stitch').addEventListener('click', async () => {
   const toStitch = selectMode ? clipsCache.filter((c) => selected.has(c.id)) : clipsCache;
   if (!toStitch.length) return;
+
+  if (!isPro() && toStitch.length > FREE_STITCH_LIMIT) {
+    openUpgrade(
+      `That's ${toStitch.length} clips — quite the streak! The free plan stitches up to ${FREE_STITCH_LIMIT} clips at a time. Go Pro to stitch them all in one video, or select ${FREE_STITCH_LIMIT} or fewer.`
+    );
+    return;
+  }
 
   $('stitch-modal').classList.remove('hidden');
   $('stitch-progress-wrap').classList.remove('hidden');
@@ -385,6 +421,7 @@ $('btn-stitch').addEventListener('click', async () => {
   try {
     const { blob, mime } = await stitchClips(toStitch, setStitchProgress, {
       signal: stitchAbort.signal,
+      watermark: isPro() ? null : APP_NAME,
     });
     showStitchResult(blob, mime);
   } catch (err) {

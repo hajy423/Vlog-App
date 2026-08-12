@@ -491,6 +491,26 @@ html, body {
 .stitch-status { color: var(--text-dim); font-size: 13px; font-variant-numeric: tabular-nums; }
 #stitch-result-wrap { display: flex; flex-direction: column; gap: 14px; }
 
+/* ============ Upgrade modal ============ */
+.chip-pro {
+  background: linear-gradient(135deg, #ff3b5c, #ff7a3b);
+  color: #fff;
+}
+.upgrade-lead { font-size: 14px; line-height: 1.45; }
+.pro-perks {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+}
+.upgrade-note {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.4;
+}
+
 /* ============ Toast ============ */
 .toast {
   position: fixed;

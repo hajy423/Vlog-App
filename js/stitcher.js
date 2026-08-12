@@ -7,11 +7,12 @@ import { pickMimeType } from './recorder.js';
 /**
  * @param {Array<{blob: Blob, duration: number}>} clips oldest-first
  * @param {(fraction: number, label: string) => void} onProgress
- * @param {{signal?: AbortSignal}} opts
+ * @param {{signal?: AbortSignal, watermark?: string}} opts watermark text is
+ *   drawn in the bottom corner of the output (free plan)
  * @returns {Promise<{blob: Blob, mime: string}>}
  */
 export async function stitchClips(clips, onProgress, opts = {}) {
-  const { signal } = opts;
+  const { signal, watermark } = opts;
   const throwIfAborted = () => {
     if (signal && signal.aborted) throw new DOMException('Stitch cancelled', 'AbortError');
   };
@@ -98,7 +99,7 @@ export async function stitchClips(clips, onProgress, opts = {}) {
       throwIfAborted();
       const v = videos[i];
       onProgress(elapsedBefore / totalMs, `Clip ${i + 1} of ${videos.length}`);
-      await playThrough(v, ctx, width, height, signal, (clipMs) => {
+      await playThrough(v, ctx, width, height, signal, watermark, (clipMs) => {
         onProgress(
           Math.min(1, (elapsedBefore + clipMs) / totalMs),
           `Clip ${i + 1} of ${videos.length}`
@@ -133,8 +134,21 @@ function waitForMetadata(video, signal) {
   });
 }
 
+function drawWatermark(ctx, width, height, text) {
+  const fontSize = Math.max(12, Math.round(Math.min(width, height) * 0.032));
+  ctx.save();
+  ctx.font = `500 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'bottom';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = fontSize * 0.4;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+  ctx.fillText(text, width - fontSize, height - fontSize * 0.75);
+  ctx.restore();
+}
+
 /** Play one clip to the end while painting its frames (letterboxed) onto the canvas. */
-function playThrough(video, ctx, width, height, signal, onClipProgress) {
+function playThrough(video, ctx, width, height, signal, watermark, onClipProgress) {
   return new Promise((resolve, reject) => {
     const vw = video.videoWidth || width;
     const vh = video.videoHeight || height;
@@ -162,6 +176,7 @@ function playThrough(video, ctx, width, height, signal, onClipProgress) {
         ctx.fillRect(0, 0, width, height);
       }
       ctx.drawImage(video, dx, dy, dw, dh);
+      if (watermark) drawWatermark(ctx, width, height, watermark);
       onClipProgress(performance.now() - started);
       if (video.ended) return finish();
       rafId = requestAnimationFrame(paint);

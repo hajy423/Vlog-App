@@ -62,6 +62,7 @@
       <h1>My clips</h1>
       <span id="clip-count" class="clip-count"></span>
       <div class="header-spacer"></div>
+      <button id="btn-pro" class="chip-btn chip-pro hidden">✨ Go Pro</button>
       <button id="btn-select-all" class="chip-btn hidden">Select all</button>
       <button id="btn-select" class="chip-btn hidden">Select</button>
     </header>
@@ -113,6 +114,22 @@
           <button id="btn-close-stitch" class="btn">Close</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ============ UPGRADE MODAL ============ -->
+  <div id="upgrade-modal" class="modal hidden">
+    <div class="modal-body">
+      <h2>✨ Go Pro</h2>
+      <p id="upgrade-lead" class="upgrade-lead"></p>
+      <ul class="pro-perks">
+        <li>🎞️ Stitch unlimited clips into one video</li>
+        <li>💧 No watermark on stitched videos</li>
+        <li>❤️ Support development</li>
+      </ul>
+      <button id="btn-buy-pro" class="btn btn-primary">Unlock Pro — $7.99</button>
+      <p class="upgrade-note">Demo build: payments aren't connected yet, so this unlocks Pro on this device for free.</p>
+      <button id="btn-close-upgrade" class="btn">Not now</button>
     </div>
   </div>
 
