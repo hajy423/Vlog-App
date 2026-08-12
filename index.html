@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Vlog">
+  <title>Vlog</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="icon" type="image/png" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- ============ RECORD SCREEN ============ -->
+  <section id="screen-record" class="screen active">
+    <div class="camera-wrap">
+      <video id="preview" autoplay playsinline muted></video>
+      <div id="live-timestamp" class="live-timestamp">--:--</div>
+      <div id="camera-error" class="camera-error hidden">
+        <p>📷</p>
+        <p id="camera-error-msg">Camera access is needed to record clips.</p>
+        <button id="btn-retry-camera" class="btn">Enable camera</button>
+      </div>
+      <div id="rec-indicator" class="rec-indicator hidden"><span class="rec-dot"></span><span id="rec-time">0.0s</span></div>
+    </div>
+
+    <div class="record-controls">
+      <div class="controls-hint" id="record-hint">Tap to record a 1–4 second clip</div>
+      <div class="controls-row">
+        <div class="control-side"></div>
+        <button id="btn-record" class="record-btn" aria-label="Record">
+          <svg class="progress-ring" viewBox="0 0 100 100">
+            <circle class="progress-ring-track" cx="50" cy="50" r="46"/>
+            <circle id="progress-ring-fill" class="progress-ring-fill" cx="50" cy="50" r="46"/>
+          </svg>
+          <span id="record-btn-core" class="record-btn-core"></span>
+        </button>
+        <div class="control-side">
+          <button id="btn-flip" class="icon-btn" aria-label="Flip camera">⟲</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLIPS SCREEN ============ -->
+  <section id="screen-clips" class="screen">
+    <header class="clips-header">
+      <h1>My clips</h1>
+      <span id="clip-count" class="clip-count"></span>
+    </header>
+
+    <div id="clip-grid" class="clip-grid"></div>
+
+    <div id="clips-empty" class="clips-empty hidden">
+      <p>🎬</p>
+      <p>No clips yet.<br>Record your first 1–4 second moment!</p>
+    </div>
+
+    <div class="stitch-bar">
+      <button id="btn-stitch" class="btn btn-primary" disabled>✨ Stitch all into one video</button>
+    </div>
+  </section>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <nav class="bottom-nav">
+    <button data-screen="screen-record" class="nav-btn active"><span class="nav-icon">●</span>Record</button>
+    <button data-screen="screen-clips" class="nav-btn"><span class="nav-icon">▦</span>Clips</button>
+  </nav>
+
+  <!-- ============ PLAYER MODAL ============ -->
+  <div id="player-modal" class="modal hidden">
+    <div class="modal-body">
+      <video id="player-video" playsinline controls></video>
+      <div class="modal-actions">
+        <button id="btn-delete-clip" class="btn btn-danger">Delete</button>
+        <button id="btn-close-player" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ STITCH MODAL ============ -->
+  <div id="stitch-modal" class="modal hidden">
+    <div class="modal-body">
+      <div id="stitch-progress-wrap">
+        <h2>Stitching your vlog…</h2>
+        <p class="stitch-note">Keep this screen open — your clips are being combined.</p>
+        <div class="progress-bar"><div id="stitch-progress" class="progress-bar-fill"></div></div>
+        <p id="stitch-status" class="stitch-status">Preparing…</p>
+        <button id="btn-cancel-stitch" class="btn">Cancel</button>
+      </div>
+      <div id="stitch-result-wrap" class="hidden">
+        <h2>Your vlog is ready! 🎉</h2>
+        <video id="stitch-video" playsinline controls></video>
+        <div class="modal-actions">
+          <button id="btn-share-stitch" class="btn btn-primary">Share</button>
+          <a id="btn-download-stitch" class="btn" download>Save</a>
+          <button id="btn-close-stitch" class="btn">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
