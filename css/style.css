@@ -257,6 +257,8 @@ html, body {
 }
 .clips-header h1 { font-size: 22px; }
 .clip-count { color: var(--text-dim); font-size: 14px; }
+.header-spacer { flex: 1; }
+.clips-header .chip-btn { align-self: center; margin-left: 8px; }
 
 .clip-grid {
   flex: 1;
@@ -299,6 +301,31 @@ html, body {
   font-variant-numeric: tabular-nums;
 }
 
+.clip-tile.selected {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
+.sel-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.clip-tile.selected .sel-badge {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 .clips-empty {
   flex: 1;
   display: flex;
@@ -313,9 +340,13 @@ html, body {
 .clips-empty p:first-child { font-size: 44px; }
 
 .stitch-bar {
+  display: flex;
+  gap: 10px;
   padding: 12px 18px 14px;
   background: var(--bg);
 }
+#btn-stitch { flex: 1; width: auto; }
+#btn-delete-selected { flex: 0 0 auto; }
 
 /* ============ Bottom nav ============ */
 .bottom-nav {

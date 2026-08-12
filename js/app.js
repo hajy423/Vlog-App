@@ -24,7 +24,7 @@ const MODE_LABELS = {
   'horizontal-rotated': '16:9 ⟲',
 };
 const MODE_HINTS = {
-  vertical: 'Tap to record a 1–4 second clip',
+  vertical: 'Tap to record a 1–3 second clip',
   horizontal: 'Horizontal video — hold your phone upright',
   'horizontal-rotated': 'Turn your phone sideways — the time stamp shows which way is up',
 };
@@ -187,7 +187,7 @@ function beginRecording() {
       recTimeEl.textContent = `${(Math.min(elapsed, MAX_MS) / 1000).toFixed(1)}s`;
       ringFill.style.strokeDashoffset = String(RING_LEN * (1 - Math.min(elapsed / MAX_MS, 1)));
       recordHint.textContent =
-        elapsed < MIN_MS ? 'Recording… (1s minimum)' : 'Tap to stop — auto-stops at 4s';
+        elapsed < MIN_MS ? 'Recording… (1s minimum)' : 'Tap to stop — auto-stops at 3s';
     });
   } catch {
     toast('Recording could not start');
@@ -232,16 +232,26 @@ function resetRecordUI() {
 
 /* ============ Clips gallery ============ */
 let clipsCache = [];
+let selectMode = false;
+const selected = new Set();
 
 async function renderClips() {
   clipsCache = await getClips();
+  // Drop selections for clips that no longer exist.
+  const ids = new Set(clipsCache.map((c) => c.id));
+  for (const id of selected) if (!ids.has(id)) selected.delete(id);
+  if (!clipsCache.length) selectMode = false;
+
   const grid = $('clip-grid');
   grid.innerHTML = '';
   $('clip-count').textContent = clipsCache.length
     ? `${clipsCache.length} clip${clipsCache.length === 1 ? '' : 's'}`
     : '';
   $('clips-empty').classList.toggle('hidden', clipsCache.length > 0);
-  $('btn-stitch').disabled = clipsCache.length < 1;
+  $('btn-select').classList.toggle('hidden', !clipsCache.length);
+  $('btn-select').textContent = selectMode ? 'Cancel' : 'Select';
+  $('btn-select-all').classList.toggle('hidden', !selectMode);
+  $('btn-select-all').textContent = selected.size === clipsCache.length ? 'None' : 'Select all';
 
   // Newest first in the grid; stitching still runs oldest first.
   [...clipsCache].reverse().forEach((clip) => {
@@ -255,10 +265,70 @@ async function renderClips() {
     const when = new Date(clip.createdAt);
     meta.innerHTML = `<span>${formatClock(when)}</span><span>${(clip.duration / 1000).toFixed(1)}s</span>`;
     tile.append(img, meta);
-    tile.addEventListener('click', () => openPlayer(clip));
+    if (selectMode) {
+      tile.classList.toggle('selected', selected.has(clip.id));
+      const badge = document.createElement('span');
+      badge.className = 'sel-badge';
+      badge.textContent = selected.has(clip.id) ? '✓' : '';
+      tile.appendChild(badge);
+      tile.addEventListener('click', () => {
+        selected.has(clip.id) ? selected.delete(clip.id) : selected.add(clip.id);
+        tile.classList.toggle('selected', selected.has(clip.id));
+        badge.textContent = selected.has(clip.id) ? '✓' : '';
+        updateClipActions();
+      });
+    } else {
+      tile.addEventListener('click', () => openPlayer(clip));
+    }
     grid.appendChild(tile);
   });
+
+  updateClipActions();
 }
+
+function updateClipActions() {
+  const stitchBtn = $('btn-stitch');
+  const deleteBtn = $('btn-delete-selected');
+  if (selectMode) {
+    stitchBtn.textContent = `✨ Stitch ${selected.size} selected`;
+    stitchBtn.disabled = selected.size < 1;
+    deleteBtn.textContent = `Delete ${selected.size}`;
+    deleteBtn.disabled = selected.size < 1;
+    deleteBtn.classList.remove('hidden');
+  } else {
+    stitchBtn.textContent = '✨ Stitch all into one video';
+    stitchBtn.disabled = clipsCache.length < 1;
+    deleteBtn.classList.add('hidden');
+  }
+  $('btn-select-all').textContent =
+    selectMode && selected.size === clipsCache.length ? 'None' : 'Select all';
+}
+
+$('btn-select').addEventListener('click', () => {
+  selectMode = !selectMode;
+  selected.clear();
+  renderClips();
+});
+
+$('btn-select-all').addEventListener('click', () => {
+  if (selected.size === clipsCache.length) {
+    selected.clear();
+  } else {
+    clipsCache.forEach((c) => selected.add(c.id));
+  }
+  renderClips();
+});
+
+$('btn-delete-selected').addEventListener('click', async () => {
+  if (!selected.size) return;
+  const n = selected.size;
+  if (!confirm(`Delete ${n} clip${n === 1 ? '' : 's'}? This can't be undone.`)) return;
+  for (const id of selected) await deleteClip(id);
+  selected.clear();
+  selectMode = false;
+  toast(`${n} clip${n === 1 ? '' : 's'} deleted`);
+  renderClips();
+});
 
 /* ============ Player modal ============ */
 let playerUrl = null;
@@ -298,7 +368,8 @@ let stitchAbort = null;
 let stitchUrl = null;
 
 $('btn-stitch').addEventListener('click', async () => {
-  if (!clipsCache.length) return;
+  const toStitch = selectMode ? clipsCache.filter((c) => selected.has(c.id)) : clipsCache;
+  if (!toStitch.length) return;
 
   $('stitch-modal').classList.remove('hidden');
   $('stitch-progress-wrap').classList.remove('hidden');
@@ -307,7 +378,7 @@ $('btn-stitch').addEventListener('click', async () => {
 
   stitchAbort = new AbortController();
   try {
-    const { blob, mime } = await stitchClips(clipsCache, setStitchProgress, {
+    const { blob, mime } = await stitchClips(toStitch, setStitchProgress, {
       signal: stitchAbort.signal,
     });
     showStitchResult(blob, mime);

@@ -2,7 +2,7 @@
 // video by piping camera frames through a canvas while recording.
 
 export const MIN_MS = 1000;
-export const MAX_MS = 4000;
+export const MAX_MS = 3000;
 
 // Recording modes:
 //  vertical            9:16, fills the phone screen

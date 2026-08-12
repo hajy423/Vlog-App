@@ -1,6 +1,6 @@
 // Stitches clips into one video by replaying them in order onto a canvas
 // and re-recording the canvas + audio. Pure browser APIs, no dependencies.
-// Runs in real time, which stays quick because every clip is 1–4 seconds.
+// Runs in real time, which stays quick because every clip is 1–3 seconds.
 
 import { pickMimeType } from './recorder.js';
 

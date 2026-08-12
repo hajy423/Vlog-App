@@ -1,6 +1,6 @@
 # Vlog 📹
 
-A mobile-first vlogging PWA. Record **1–4 second** video clips with the current time
+A mobile-first vlogging PWA. Record **1–3 second** video clips with the current time
 (24-hour `HH:MM`) burned into the center of the frame in small white text, then
 **stitch every clip together** into one video, oldest to newest.
 
@@ -9,8 +9,8 @@ Everything stays **on your phone** — clips are stored locally in the browser
 
 ## Features
 
-- 🎥 **Record screen** — tap the button to record; recording auto-stops at 4 s and
-  can't be stopped before 1 s, so every clip is 1–4 seconds long.
+- 🎥 **Record screen** — tap the button to record; recording auto-stops at 3 s and
+  can't be stopped before 1 s, so every clip is 1–3 seconds long.
 - 🕐 **Burned-in timestamp** — the time of recording (24-hour clock, `HH:MM`, no
   seconds/milliseconds, no date) is rendered into the video itself: small, white,
   dead-center.
@@ -54,7 +54,7 @@ browser's **Add to Home Screen**.
 - **Storage** (`js/db.js`): clip blobs, thumbnails, and metadata live in IndexedDB.
 - **Stitching** (`js/stitcher.js`): clips are replayed in chronological order onto
   a canvas while their audio is routed through the Web Audio API, and the combined
-  stream is re-recorded into a single file. It runs in real time — with 1–4 s
+  stream is re-recorded into a single file. It runs in real time — with 1–3 s
   clips, stitching a whole day stays quick — and needs no external libraries.
 - Output format is whatever the device's `MediaRecorder` supports best: MP4 on
   iOS Safari, WebM on Android Chrome.

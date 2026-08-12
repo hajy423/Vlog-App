@@ -37,7 +37,7 @@
     </div>
 
     <div class="record-controls">
-      <div class="controls-hint" id="record-hint">Tap to record a 1–4 second clip</div>
+      <div class="controls-hint" id="record-hint">Tap to record a 1–3 second clip</div>
       <div class="controls-row">
         <div class="control-side">
           <button id="btn-mode" class="chip-btn" aria-label="Video orientation">9:16</button>
@@ -61,16 +61,20 @@
     <header class="clips-header">
       <h1>My clips</h1>
       <span id="clip-count" class="clip-count"></span>
+      <div class="header-spacer"></div>
+      <button id="btn-select-all" class="chip-btn hidden">Select all</button>
+      <button id="btn-select" class="chip-btn hidden">Select</button>
     </header>
 
     <div id="clip-grid" class="clip-grid"></div>
 
     <div id="clips-empty" class="clips-empty hidden">
       <p>🎬</p>
-      <p>No clips yet.<br>Record your first 1–4 second moment!</p>
+      <p>No clips yet.<br>Record your first 1–3 second moment!</p>
     </div>
 
     <div class="stitch-bar">
+      <button id="btn-delete-selected" class="btn btn-danger hidden">Delete</button>
       <button id="btn-stitch" class="btn btn-primary" disabled>✨ Stitch all into one video</button>
     </div>
   </section>
