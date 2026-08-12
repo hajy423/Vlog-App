@@ -1,5 +1,5 @@
 import { addClip, getClips, deleteClip } from './db.js';
-import { Recorder, formatClock, extForMime, MIN_MS, MAX_MS } from './recorder.js';
+import { Recorder, formatClock, extForMime, MIN_MS, MAX_MS, MODES, pageIsLandscape } from './recorder.js';
 import { stitchClips } from './stitcher.js';
 
 const $ = (id) => document.getElementById(id);
@@ -16,6 +16,103 @@ const RING_LEN = 289; // 2 * PI * r(46), matches stroke-dasharray in CSS
 
 const recorder = new Recorder(previewEl);
 let activeRecording = null;
+
+/* ============ Mode (aspect / orientation) ============ */
+const MODE_LABELS = {
+  vertical: '9:16',
+  horizontal: '16:9',
+  'horizontal-rotated': '16:9 ⟲',
+};
+const MODE_HINTS = {
+  vertical: 'Tap to record a 1–4 second clip',
+  horizontal: 'Horizontal video — hold your phone upright',
+  'horizontal-rotated': 'Turn your phone sideways — the time stamp shows which way is up',
+};
+
+recorder.mode = MODES.includes(localStorage.getItem('vlog-mode'))
+  ? localStorage.getItem('vlog-mode')
+  : 'vertical';
+
+$('btn-mode').addEventListener('click', () => {
+  if (recorder.recording) return;
+  const next = MODES[(MODES.indexOf(recorder.mode) + 1) % MODES.length];
+  recorder.mode = next;
+  localStorage.setItem('vlog-mode', next);
+  updateCameraUI();
+});
+
+$('btn-rot-dir').addEventListener('click', () => {
+  if (recorder.recording) return;
+  recorder.rotationDir *= -1;
+  updateCameraUI();
+});
+
+window.matchMedia('(orientation: landscape)').addEventListener('change', updateCameraUI);
+
+function updateCameraUI() {
+  const wrap = $('camera-wrap');
+  wrap.classList.remove('mode-vertical', 'mode-horizontal', 'mode-horizontal-rotated');
+  // Rotated mode uses the full screen like vertical; only plain horizontal letterboxes.
+  const letterbox = recorder.mode === 'horizontal' && !pageIsLandscape();
+  wrap.classList.add(letterbox ? 'mode-horizontal' : 'mode-vertical');
+
+  $('btn-mode').textContent = MODE_LABELS[recorder.mode];
+  recordHint.textContent = MODE_HINTS[recorder.mode];
+  $('btn-rot-dir').classList.toggle('hidden', recorder.activeRotation === 0);
+  liveTimestampEl.style.transform = `translate(-50%, -50%) rotate(${recorder.activeRotation * 90}deg)`;
+  updatePreviewTransform();
+}
+
+/* ============ Zoom ============ */
+function updatePreviewTransform() {
+  const t = [];
+  if (recorder.isFrontCamera) {
+    // A selfie mirror flips along what the user perceives as horizontal,
+    // which is the screen's vertical axis when the phone is held sideways.
+    t.push(recorder.activeRotation ? 'scaleY(-1)' : 'scaleX(-1)');
+  }
+  if (recorder.digitalZoom > 1) t.push(`scale(${recorder.digitalZoom})`);
+  previewEl.style.transform = t.join(' ');
+}
+
+function setZoom(z) {
+  recorder.setZoom(z);
+  $('zoom-label').textContent = `${recorder.zoom.toFixed(1)}×`;
+  updatePreviewTransform();
+}
+
+$('btn-zoom-in').addEventListener('click', () => setZoom(recorder.zoom + 0.5));
+$('btn-zoom-out').addEventListener('click', () => setZoom(recorder.zoom - 0.5));
+
+// Pinch to zoom on the preview.
+const pinchPointers = new Map();
+let pinchStart = null;
+const previewBox = $('preview-box');
+
+function pinchDist() {
+  const [a, b] = [...pinchPointers.values()];
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+}
+
+previewBox.addEventListener('pointerdown', (e) => {
+  pinchPointers.set(e.pointerId, e);
+  if (pinchPointers.size === 2) {
+    pinchStart = { dist: pinchDist(), zoom: recorder.zoom };
+  }
+});
+previewBox.addEventListener('pointermove', (e) => {
+  if (!pinchPointers.has(e.pointerId)) return;
+  pinchPointers.set(e.pointerId, e);
+  if (pinchStart && pinchPointers.size === 2) {
+    setZoom(pinchStart.zoom * (pinchDist() / pinchStart.dist));
+  }
+});
+for (const type of ['pointerup', 'pointercancel', 'pointerleave']) {
+  previewBox.addEventListener(type, (e) => {
+    pinchPointers.delete(e.pointerId);
+    if (pinchPointers.size < 2) pinchStart = null;
+  });
+}
 
 /* ============ Live clock overlay ============ */
 function tickClock() {
@@ -45,6 +142,8 @@ async function startCamera() {
   $('camera-error').classList.add('hidden');
   try {
     await recorder.start();
+    setZoom(recorder.zoom);
+    updateCameraUI();
   } catch (err) {
     $('camera-error-msg').textContent =
       err && err.name === 'NotAllowedError'
@@ -59,6 +158,7 @@ flipBtn.addEventListener('click', async () => {
   if (recorder.recording) return;
   try {
     await recorder.flip();
+    updateCameraUI();
   } catch {
     toast('Could not switch camera');
   }
@@ -98,6 +198,7 @@ function beginRecording() {
   recordBtn.classList.add('recording');
   recIndicator.classList.remove('hidden');
   flipBtn.disabled = true;
+  $('btn-mode').disabled = true;
 
   rec.done
     .then(async (clip) => {
@@ -124,8 +225,9 @@ function resetRecordUI() {
   recordBtn.classList.remove('recording');
   recIndicator.classList.add('hidden');
   flipBtn.disabled = false;
+  $('btn-mode').disabled = false;
   ringFill.style.strokeDashoffset = String(RING_LEN);
-  recordHint.textContent = 'Tap to record a 1–4 second clip';
+  recordHint.textContent = MODE_HINTS[recorder.mode];
 }
 
 /* ============ Clips gallery ============ */
@@ -281,4 +383,5 @@ if (navigator.storage && navigator.storage.persist) {
   navigator.storage.persist().catch(() => {});
 }
 
+updateCameraUI();
 startCamera();

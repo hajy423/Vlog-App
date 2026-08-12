@@ -17,21 +17,31 @@
 
   <!-- ============ RECORD SCREEN ============ -->
   <section id="screen-record" class="screen active">
-    <div class="camera-wrap">
-      <video id="preview" autoplay playsinline muted></video>
-      <div id="live-timestamp" class="live-timestamp">--:--</div>
+    <div id="camera-wrap" class="camera-wrap mode-vertical">
+      <div id="preview-box">
+        <video id="preview" autoplay playsinline muted></video>
+        <div id="live-timestamp" class="live-timestamp">--:--</div>
+      </div>
       <div id="camera-error" class="camera-error hidden">
         <p>📷</p>
         <p id="camera-error-msg">Camera access is needed to record clips.</p>
         <button id="btn-retry-camera" class="btn">Enable camera</button>
       </div>
       <div id="rec-indicator" class="rec-indicator hidden"><span class="rec-dot"></span><span id="rec-time">0.0s</span></div>
+      <button id="btn-rot-dir" class="chip-btn rot-dir-btn hidden">⤾ Flip 180°</button>
+      <div class="zoom-controls">
+        <button id="btn-zoom-out" aria-label="Zoom out">−</button>
+        <span id="zoom-label">1.0×</span>
+        <button id="btn-zoom-in" aria-label="Zoom in">+</button>
+      </div>
     </div>
 
     <div class="record-controls">
       <div class="controls-hint" id="record-hint">Tap to record a 1–4 second clip</div>
       <div class="controls-row">
-        <div class="control-side"></div>
+        <div class="control-side">
+          <button id="btn-mode" class="chip-btn" aria-label="Video orientation">9:16</button>
+        </div>
         <button id="btn-record" class="record-btn" aria-label="Record">
           <svg class="progress-ring" viewBox="0 0 100 100">
             <circle class="progress-ring-track" cx="50" cy="50" r="46"/>

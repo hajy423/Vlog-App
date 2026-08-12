@@ -43,9 +43,11 @@ export async function stitchClips(clips, onProgress, opts = {}) {
     await Promise.all(primed);
     throwIfAborted();
 
-    // Output size: the largest clip frame, so nothing is downscaled.
-    const width = Math.max(...videos.map((v) => v.videoWidth || 1280));
-    const height = Math.max(...videos.map((v) => v.videoHeight || 720));
+    // Output orientation: whichever most clips use; the rest get letterboxed.
+    const landscapeCount = videos.filter((v) => (v.videoWidth || 0) >= (v.videoHeight || 1)).length;
+    const useLandscape = landscapeCount >= videos.length / 2;
+    const width = useLandscape ? 1280 : 720;
+    const height = useLandscape ? 720 : 1280;
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;

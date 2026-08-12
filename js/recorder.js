@@ -4,6 +4,23 @@
 export const MIN_MS = 1000;
 export const MAX_MS = 4000;
 
+// Recording modes:
+//  vertical            9:16, fills the phone screen
+//  horizontal          16:9 framed while holding the phone upright (letterboxed)
+//  horizontal-rotated  16:9 recorded while holding the phone sideways
+export const MODES = ['vertical', 'horizontal', 'horizontal-rotated'];
+
+const OUTPUT = {
+  portrait: { w: 720, h: 1280 },
+  landscape: { w: 1280, h: 720 },
+};
+
+export const MAX_ZOOM = 5;
+
+export function pageIsLandscape() {
+  return window.matchMedia('(orientation: landscape)').matches;
+}
+
 export function formatClock(date = new Date()) {
   const h = String(date.getHours()).padStart(2, '0');
   const m = String(date.getMinutes()).padStart(2, '0');
@@ -30,7 +47,7 @@ export function extForMime(mime) {
 
 /** Draw the centered white HH:MM stamp onto a canvas context. */
 export function drawTimestamp(ctx, width, height, text) {
-  const fontSize = Math.max(14, Math.round(height * 0.035));
+  const fontSize = Math.max(14, Math.round(Math.min(width, height) * 0.045));
   ctx.save();
   ctx.font = `500 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
   ctx.textAlign = 'center';
@@ -48,11 +65,34 @@ export class Recorder {
     this.stream = null;
     this.facing = 'user';
     this.recording = false;
-    this._cleanup = null;
+    this.mode = 'vertical';
+    this.zoom = 1;
+    // Which way the phone is turned in horizontal-rotated mode:
+    // +1 = top of the phone to the left, -1 = top to the right.
+    this.rotationDir = 1;
+    this._zoomCaps = null;
   }
 
   get isFrontCamera() {
     return this.facing === 'user';
+  }
+
+  /** True when the camera hardware handles zoom (better quality than cropping). */
+  get usesNativeZoom() {
+    return !!this._zoomCaps;
+  }
+
+  /** The crop factor to apply in software when there is no hardware zoom. */
+  get digitalZoom() {
+    return this.usesNativeZoom ? 1 : this.zoom;
+  }
+
+  /**
+   * 0 when frames can be used as-is; ±1 when the phone is held sideways while
+   * the page itself is still portrait, so frames must be rotated 90°.
+   */
+  get activeRotation() {
+    return this.mode === 'horizontal-rotated' && !pageIsLandscape() ? this.rotationDir : 0;
   }
 
   async start(facing = this.facing) {
@@ -67,12 +107,34 @@ export class Recorder {
       audio: true,
     });
     this.videoEl.srcObject = this.stream;
-    this.videoEl.classList.toggle('mirrored', this.isFrontCamera);
+
+    this._zoomCaps = null;
+    const track = this.stream.getVideoTracks()[0];
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    if (caps.zoom && typeof caps.zoom.max === 'number' && caps.zoom.max > (caps.zoom.min || 1)) {
+      this._zoomCaps = { min: caps.zoom.min || 1, max: caps.zoom.max };
+    }
+    this._applyNativeZoom();
+
     await this.videoEl.play().catch(() => {});
   }
 
   async flip() {
     await this.start(this.isFrontCamera ? 'environment' : 'user');
+  }
+
+  /** Clamp and set the zoom level. Returns the applied value. */
+  setZoom(z) {
+    this.zoom = Math.min(MAX_ZOOM, Math.max(1, z));
+    this._applyNativeZoom();
+    return this.zoom;
+  }
+
+  _applyNativeZoom() {
+    if (!this.stream || !this._zoomCaps) return;
+    const track = this.stream.getVideoTracks()[0];
+    const value = Math.min(this._zoomCaps.max, Math.max(this._zoomCaps.min, this.zoom));
+    track.applyConstraints({ advanced: [{ zoom: value }] }).catch(() => {});
   }
 
   stopCamera() {
@@ -94,24 +156,50 @@ export class Recorder {
     this.recording = true;
 
     const video = this.videoEl;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 1280;
-    canvas.height = video.videoHeight || 720;
-    const ctx = canvas.getContext('2d');
+    const out = this.mode === 'vertical' ? OUTPUT.portrait : OUTPUT.landscape;
+    const rot = this.activeRotation;
     const mirror = this.isFrontCamera;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = out.w;
+    canvas.height = out.h;
+    const ctx = canvas.getContext('2d');
 
     let rafId = 0;
     const paint = () => {
-      if (mirror) {
-        ctx.save();
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        ctx.restore();
-      } else {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const vw = video.videoWidth || 1280;
+      const vh = video.videoHeight || 720;
+
+      // Center "cover" crop of the source, matching the output aspect —
+      // swapped when frames get rotated 90° — then tightened by digital zoom.
+      const aw = rot ? out.h : out.w;
+      const ah = rot ? out.w : out.h;
+      let sw = vw;
+      let sh = (vw * ah) / aw;
+      if (sh > vh) {
+        sh = vh;
+        sw = (vh * aw) / ah;
       }
-      drawTimestamp(ctx, canvas.width, canvas.height, formatClock());
+      sw /= this.digitalZoom;
+      sh /= this.digitalZoom;
+      const sx = (vw - sw) / 2;
+      const sy = (vh - sh) / 2;
+
+      ctx.save();
+      if (mirror) {
+        ctx.translate(out.w, 0);
+        ctx.scale(-1, 1);
+      }
+      if (rot) {
+        ctx.translate(out.w / 2, out.h / 2);
+        ctx.rotate((-rot * Math.PI) / 2);
+        ctx.drawImage(video, sx, sy, sw, sh, -out.h / 2, -out.w / 2, out.h, out.w);
+      } else {
+        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, out.w, out.h);
+      }
+      ctx.restore();
+
+      drawTimestamp(ctx, out.w, out.h, formatClock());
       rafId = requestAnimationFrame(paint);
     };
     paint();
