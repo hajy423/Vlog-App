@@ -339,6 +339,10 @@ function openPlayer(clip) {
   playerClipId = clip.id;
   playerUrl = URL.createObjectURL(clip.blob);
   const video = $('player-video');
+  // Vertical video fills the whole screen; horizontal keeps bars top/bottom.
+  video.onloadedmetadata = () => {
+    video.classList.toggle('cover', video.videoHeight > video.videoWidth);
+  };
   video.src = playerUrl;
   $('player-modal').classList.remove('hidden');
   video.play().catch(() => {});
@@ -347,6 +351,7 @@ function openPlayer(clip) {
 function closePlayer() {
   const video = $('player-video');
   video.pause();
+  video.classList.remove('cover');
   video.removeAttribute('src');
   if (playerUrl) URL.revokeObjectURL(playerUrl);
   playerUrl = null;

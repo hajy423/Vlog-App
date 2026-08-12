@@ -85,14 +85,12 @@
     <button data-screen="screen-clips" class="nav-btn"><span class="nav-icon">▦</span>Clips</button>
   </nav>
 
-  <!-- ============ PLAYER MODAL ============ -->
-  <div id="player-modal" class="modal hidden">
-    <div class="modal-body">
-      <video id="player-video" playsinline controls></video>
-      <div class="modal-actions">
-        <button id="btn-delete-clip" class="btn btn-danger">Delete</button>
-        <button id="btn-close-player" class="btn">Close</button>
-      </div>
+  <!-- ============ PLAYER (full screen) ============ -->
+  <div id="player-modal" class="player-modal hidden">
+    <video id="player-video" playsinline loop></video>
+    <div class="player-actions">
+      <button id="btn-delete-clip" class="btn btn-danger">Delete</button>
+      <button id="btn-close-player" class="btn btn-glass">Close</button>
     </div>
   </div>
 
