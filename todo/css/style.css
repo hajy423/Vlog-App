@@ -133,6 +133,94 @@ body.sheet-open {
   background: var(--accent-soft);
 }
 
+/* ------------------------------------------------------------------- voice */
+
+.mic-btn {
+  flex-shrink: 0;
+  width: 52px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mic-btn.active {
+  border-color: transparent;
+  background: var(--danger);
+  animation: mic-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 97, 79, 0.5); }
+  50% { box-shadow: 0 0 0 10px rgba(244, 97, 79, 0); }
+}
+
+.listening {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -6px 20px 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: rgba(139, 92, 246, 0.14);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.listening-wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.listening-wave i {
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  animation: wave 1s ease-in-out infinite;
+}
+
+.listening-wave i:nth-child(2) { animation-delay: 0.15s; }
+.listening-wave i:nth-child(3) { animation-delay: 0.3s; }
+.listening-wave i:nth-child(4) { animation-delay: 0.45s; }
+.listening-wave i:nth-child(5) { animation-delay: 0.6s; }
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+.listening-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 14.5px;
+  color: #d7cbff;
+  overflow-wrap: anywhere;
+}
+
+.listening-stop {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  font-size: 13.5px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mic-btn.active,
+  .listening-wave i {
+    animation: none;
+  }
+}
+
 /* ------------------------------------------------------------------- lists */
 
 .list-wrap {
@@ -207,6 +295,31 @@ body.sheet-open {
 .done .task-text {
   color: var(--text-dim);
   text-decoration: line-through;
+}
+
+/* Escalation: the longer something sits, the harder it is to scroll past. */
+.task.sass-1 { border-color: rgba(139, 92, 246, 0.22); }
+.task.sass-2 { border-color: rgba(240, 180, 41, 0.32); }
+.task.sass-3 { border-color: rgba(244, 97, 79, 0.42); }
+
+.task.sass-4 {
+  border-color: var(--danger);
+  background: rgba(244, 97, 79, 0.09);
+}
+
+.task-sass {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+}
+
+.sass-3 .task-sass { color: #ffab9e; }
+
+.sass-4 .task-sass {
+  color: #ff9d8e;
+  font-weight: 600;
+  font-style: normal;
 }
 
 .task-when {

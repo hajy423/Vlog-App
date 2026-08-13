@@ -33,8 +33,15 @@
       maxlength="200"
       enterkeyhint="done"
       aria-label="New to-do">
+    <button id="btn-mic" class="mic-btn hidden" type="button" aria-label="Add by voice" aria-pressed="false">🎙</button>
     <button id="btn-add" class="add-btn" type="submit" aria-label="Add">+</button>
   </form>
+
+  <div id="listening" class="listening hidden" aria-live="polite">
+    <span class="listening-wave"><i></i><i></i><i></i><i></i><i></i></span>
+    <span id="listening-text" class="listening-text">Listening… say the thing.</span>
+    <button id="btn-mic-stop" class="listening-stop" type="button">Stop</button>
+  </div>
 
   <main class="list-wrap">
     <ul id="open-list" class="task-list"></ul>
@@ -158,6 +165,29 @@
       <div class="help-item">
         <span class="help-num">3</span>
         <div>
+          <strong>Talk instead of typing</strong>
+          <p>
+            Tap 🎙 and just say it. It keeps listening, so you can reel off several
+            in a row. Say the time out loud too — <em>"call mum tomorrow at six"</em>
+            — and the reminder is set in the same breath.
+          </p>
+        </div>
+      </div>
+
+      <div class="help-item">
+        <span class="help-num">4</span>
+        <div>
+          <strong>Or don't even open it</strong>
+          <p>
+            Set up a Siri phrase once and you can say <em>"Hey Siri, add to Nudge"</em>
+            with the phone in your pocket. Steps are in the README.
+          </p>
+        </div>
+      </div>
+
+      <div class="help-item">
+        <span class="help-num">5</span>
+        <div>
           <strong>Put it where your thumb already goes</strong>
           <p>
             In Safari, tap Share → Add to Home Screen. Drop the icon in your dock,
@@ -165,6 +195,11 @@
           </p>
         </div>
       </div>
+
+      <p class="sheet-note">
+        Fair warning: things left sitting on the list get commented on, and the
+        remarks get worse the longer you leave them.
+      </p>
 
       <p class="sheet-note">
         Everything is stored on this device only. Nothing is uploaded, and there's

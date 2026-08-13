@@ -14,6 +14,9 @@ import {
   setSeenIntro,
 } from './store.js';
 import { taskIcs, dailyIcs, allRemindersIcs, deliverIcs } from './ics.js';
+import { parseWhen } from './when.js';
+import { sassLevel, sassLine, sassyAlert, dailySummary } from './sass.js';
+import { createVoiceCapture, isSupported as voiceSupported } from './voice.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -21,6 +24,10 @@ const el = {
   summary: $('summary'),
   addForm: $('add-form'),
   addInput: $('add-input'),
+  btnMic: $('btn-mic'),
+  btnMicStop: $('btn-mic-stop'),
+  listening: $('listening'),
+  listeningText: $('listening-text'),
   openList: $('open-list'),
   emptyState: $('empty-state'),
   doneSection: $('done-section'),
@@ -133,8 +140,9 @@ function renderList(list, tasks, isDone) {
   const now = Date.now();
 
   for (const task of tasks) {
+    const level = isDone ? 0 : sassLevel(task, now);
     const li = document.createElement('li');
-    li.className = 'task';
+    li.className = `task${level ? ` sass-${level}` : ''}`;
     li.dataset.id = task.id;
 
     const check = document.createElement('button');
@@ -154,6 +162,14 @@ function renderList(list, tasks, isDone) {
     text.className = 'task-text';
     text.textContent = task.text;
     body.appendChild(text);
+
+    const jab = isDone ? null : sassLine(task, now);
+    if (jab) {
+      const line = document.createElement('span');
+      line.className = 'task-sass';
+      line.textContent = jab;
+      body.appendChild(line);
+    }
 
     if (task.remindAt && !isDone) {
       const chip = document.createElement('button');
@@ -280,9 +296,13 @@ async function handOff(ics, filename, successMessage) {
   }
 }
 
+/**
+ * The alert text is generated at send time, so a reminder armed for something
+ * ancient arrives on the lock screen with the tone it has earned.
+ */
 async function sendTaskToCalendar(task) {
   const ok = await handOff(
-    taskIcs(task),
+    taskIcs({ ...task, text: sassyAlert(task) }),
     `nudge-${task.id.slice(0, 8)}.ics`,
     'Reminder sent to Calendar'
   );
@@ -291,14 +311,74 @@ async function sendTaskToCalendar(task) {
 
 // ------------------------------------------------------------------- events
 
+/**
+ * The single way anything gets onto the list, whether typed, spoken, or handed
+ * over by Siri. Runs the words through the time parser first, so saying the
+ * deadline out loud is enough to set the reminder.
+ *
+ * @returns {object|null} the new task
+ */
+function capture(raw) {
+  const { text, remindAt } = parseWhen(raw);
+  if (!text) return null;
+  return addTask(text, remindAt);
+}
+
 el.addForm.addEventListener('submit', (e) => {
   e.preventDefault();
-  const task = addTask(el.addInput.value);
+  const task = capture(el.addInput.value);
   if (!task) return;
   el.addInput.value = '';
+  if (task.remindAt) toast(`Reminder ${formatWhen(task.remindAt)} — tap 📅 to arm it`, 4000);
   // Keep the keyboard up: adding several things in a row is the common case.
   el.addInput.focus();
 });
+
+// ------------------------------------------------------------------- voice
+
+const voice = createVoiceCapture({
+  onStart() {
+    el.listening.classList.remove('hidden');
+    el.btnMic.classList.add('active');
+    el.btnMic.setAttribute('aria-pressed', 'true');
+    el.listeningText.textContent = 'Listening… say the thing.';
+  },
+  onInterim(text) {
+    el.listeningText.textContent = text || 'Listening… say the thing.';
+  },
+  onResult(text) {
+    const task = capture(text);
+    if (task) {
+      el.listeningText.textContent = task.remindAt
+        ? `✓ ${task.text} — ${formatWhen(task.remindAt)}`
+        : `✓ ${task.text}`;
+    } else {
+      el.listeningText.textContent = "Didn't catch that.";
+    }
+  },
+  onStop() {
+    el.listening.classList.add('hidden');
+    el.btnMic.classList.remove('active');
+    el.btnMic.setAttribute('aria-pressed', 'false');
+  },
+  onError(reason) {
+    el.listening.classList.add('hidden');
+    el.btnMic.classList.remove('active');
+    el.btnMic.setAttribute('aria-pressed', 'false');
+    toast(reason, 5000);
+  },
+});
+
+if (voice) {
+  el.btnMic.classList.remove('hidden');
+  el.btnMic.addEventListener('click', () => voice.toggle());
+  el.btnMicStop.addEventListener('click', () => voice.stop());
+  // Listening in the background is a battery and privacy problem, and iOS kills
+  // it anyway — so drop the mic the moment the app is no longer in front.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && voice.listening) voice.stop();
+  });
+}
 
 el.btnClearDone.addEventListener('click', () => {
   clearDone();
@@ -362,9 +442,9 @@ el.btnDailySave.addEventListener('click', async () => {
   if (Number.isNaN(hour) || Number.isNaN(minute)) return toast('Pick a time first');
   closeSheet(el.dailySheet);
   const ok = await handOff(
-    dailyIcs(hour, minute, openTasks().length),
+    dailyIcs(hour, minute, dailySummary(openTasks())),
     'nudge-daily.ics',
-    'Daily check-in sent to Calendar'
+    'Daily nudge sent to Calendar'
   );
   if (ok) setDaily({ enabled: true, hour, minute });
 });
@@ -383,7 +463,7 @@ el.btnSyncAll.addEventListener('click', async () => {
   const pending = pendingReminders();
   if (pending.length === 0) return;
   const ok = await handOff(
-    allRemindersIcs(pending),
+    allRemindersIcs(pending.map((t) => ({ ...t, text: sassyAlert(t) }))),
     'nudge-reminders.ics',
     `${pending.length} reminder${pending.length === 1 ? '' : 's'} sent to Calendar`
   );
@@ -424,10 +504,36 @@ function toast(message, ms = 2600) {
 
 // -------------------------------------------------------------------- start
 
+/**
+ * Tasks handed over by the Siri Shortcut arrive as ?add=… on the URL. The
+ * parameter is stripped immediately afterwards so a refresh — or iOS restoring
+ * the tab later — can't quietly add the same thing twice.
+ */
+function captureFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const spoken = params.get('add');
+  if (!spoken) return;
+
+  history.replaceState(null, '', location.pathname);
+
+  const task = capture(spoken);
+  if (task) {
+    toast(
+      task.remindAt ? `Got it — reminder ${formatWhen(task.remindAt)}` : `Got it: ${task.text}`,
+      4000
+    );
+  } else {
+    toast("Nothing to add — didn't catch any words", 4000);
+  }
+}
+
 subscribe(render);
+captureFromUrl();
 render();
 
-if (!getState().seenIntro) openSheet(el.helpSheet);
+// Something arriving by Siri is proof the app works; don't greet them with a
+// wall of instructions on top of it.
+if (!getState().seenIntro && !getState().tasks.length) openSheet(el.helpSheet);
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

@@ -130,15 +130,14 @@ export function taskIcs(task) {
 
 /**
  * The daily check-in: one recurring event that re-fires forever, so the list
- * gets in front of you even when nothing on it has its own alarm.
+ * gets in front of you even when nothing on it has its own alarm. The caller
+ * supplies the summary, which is how the escalating tone reaches the lock
+ * screen rather than staying trapped in the app.
  */
-export function dailyIcs(hour, minute, openCount) {
+export function dailyIcs(hour, minute, summary) {
   const start = new Date();
   start.setHours(hour, minute, 0, 0);
   if (start.getTime() <= Date.now()) start.setDate(start.getDate() + 1);
-  const summary = openCount
-    ? `Your list — ${openCount} thing${openCount === 1 ? '' : 's'} open`
-    : 'Your list';
   return calendar(
     vevent({
       uid: 'nudge-daily@nudge.local', // stable: re-importing updates the same event
