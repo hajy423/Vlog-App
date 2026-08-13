@@ -1,5 +1,9 @@
 # Vlog 📹
 
+> Also in this repo: **[Nudge](todo/)** — a to-do PWA in `todo/` that delivers its
+> reminders through your phone's Calendar, so they reach your lock screen without
+> you opening anything. Separate app, separate Home Screen icon.
+
 A mobile-first vlogging PWA. Record **1–3 second** video clips with the current time
 (24-hour `HH:MM`) burned into the center of the frame in small white text, then
 **stitch every clip together** into one video, oldest to newest.

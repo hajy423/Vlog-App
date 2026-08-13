@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#12101c">
+  <meta name="description" content="A to-do list that comes to you: reminders land on your lock screen through the Calendar app, and the home-screen icon carries a live count.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nudge">
+  <title>Nudge</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-180.png">
+  <link rel="icon" type="image/png" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-main">
+      <h1>Nudge</h1>
+      <p id="summary" class="summary">Nothing on the list</p>
+    </div>
+    <button id="btn-help" class="icon-btn" aria-label="How this works">?</button>
+  </header>
+
+  <form id="add-form" class="add-form" autocomplete="off">
+    <input
+      id="add-input"
+      class="add-input"
+      type="text"
+      placeholder="What needs doing?"
+      maxlength="200"
+      enterkeyhint="done"
+      aria-label="New to-do">
+    <button id="btn-add" class="add-btn" type="submit" aria-label="Add">+</button>
+  </form>
+
+  <main class="list-wrap">
+    <ul id="open-list" class="task-list"></ul>
+
+    <div id="empty-state" class="empty-state hidden">
+      <p class="empty-mark">✓</p>
+      <p>Nothing left to do.</p>
+      <p class="empty-sub">Add something above — then give it a time, and your phone will bring it to you.</p>
+    </div>
+
+    <section id="done-section" class="done-section hidden">
+      <div class="done-header">
+        <h2 id="done-title">Done</h2>
+        <button id="btn-clear-done" class="text-btn">Clear</button>
+      </div>
+      <ul id="done-list" class="task-list done"></ul>
+    </section>
+  </main>
+
+  <!-- The two things that reach you when the app is shut. -->
+  <nav class="reach-bar">
+    <button id="btn-daily" class="reach-btn">
+      <span class="reach-icon">🔔</span>
+      <span class="reach-label">
+        <strong>Daily nudge</strong>
+        <em id="daily-state">Off</em>
+      </span>
+    </button>
+    <button id="btn-sync-all" class="reach-btn" disabled>
+      <span class="reach-icon">📅</span>
+      <span class="reach-label">
+        <strong>Send all</strong>
+        <em id="sync-state">None set</em>
+      </span>
+    </button>
+  </nav>
+
+  <!-- ============ REMINDER SHEET ============ -->
+  <div id="remind-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="remind-title">
+    <div class="sheet-body">
+      <h2 id="remind-title">Remind me</h2>
+      <p id="remind-task" class="sheet-task"></p>
+
+      <div class="quick-times" id="quick-times">
+        <button class="chip" data-quick="1h">In an hour</button>
+        <button class="chip" data-quick="tonight">Tonight, 7pm</button>
+        <button class="chip" data-quick="tomorrow">Tomorrow, 9am</button>
+        <button class="chip" data-quick="weekend">Saturday, 10am</button>
+      </div>
+
+      <label class="field-label" for="remind-when">Or pick a time</label>
+      <input id="remind-when" class="field" type="datetime-local">
+
+      <p class="sheet-note">
+        This hands the reminder to your phone's Calendar, which is what actually
+        raises the alert — so it reaches your lock screen without opening Nudge.
+      </p>
+
+      <div class="sheet-actions">
+        <button id="btn-remind-save" class="btn btn-primary">Set reminder</button>
+        <button id="btn-remind-clear" class="btn btn-danger hidden">Remove reminder</button>
+        <button id="btn-remind-cancel" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DAILY CHECK-IN SHEET ============ -->
+  <div id="daily-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="daily-title">
+    <div class="sheet-body">
+      <h2 id="daily-title">Daily check-in</h2>
+      <p class="sheet-lead">
+        One repeating calendar alert, every day, forever. It's the backstop for
+        everything on the list that has no time of its own.
+      </p>
+
+      <label class="field-label" for="daily-time">Every day at</label>
+      <input id="daily-time" class="field" type="time" value="08:00">
+
+      <div class="sheet-actions">
+        <button id="btn-daily-save" class="btn btn-primary">Add to Calendar</button>
+        <button id="btn-daily-off" class="btn btn-danger hidden">Turn off</button>
+        <button id="btn-daily-cancel" class="btn">Cancel</button>
+      </div>
+      <p class="sheet-note">
+        Turning it off here stops Nudge tracking it — delete the repeating event
+        in Calendar to actually silence it.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ HELP SHEET ============ -->
+  <div id="help-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="sheet-body">
+      <h2 id="help-title">How this reaches you</h2>
+
+      <div class="help-item">
+        <span class="help-num">1</span>
+        <div>
+          <strong>Calendar does the shouting</strong>
+          <p>
+            A website can't raise an alert on a closed iPhone. Calendar can, and
+            it's always running. Give a to-do a time and Nudge hands it over as a
+            calendar alert — the reminder that lights up your lock screen says the
+            task itself, so you never have to open anything.
+          </p>
+        </div>
+      </div>
+
+      <div class="help-item">
+        <span class="help-num">2</span>
+        <div>
+          <strong>The icon keeps score</strong>
+          <p>
+            Add Nudge to your Home Screen and its icon carries a red badge with
+            the number of open items. It sits there every time you unlock your
+            phone, no notification required.
+          </p>
+        </div>
+      </div>
+
+      <div class="help-item">
+        <span class="help-num">3</span>
+        <div>
+          <strong>Put it where your thumb already goes</strong>
+          <p>
+            In Safari, tap Share → Add to Home Screen. Drop the icon in your dock,
+            next to the apps you <em>do</em> open.
+          </p>
+        </div>
+      </div>
+
+      <p class="sheet-note">
+        Everything is stored on this device only. Nothing is uploaded, and there's
+        no account.
+      </p>
+
+      <div class="sheet-actions">
+        <button id="btn-help-close" class="btn btn-primary">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
