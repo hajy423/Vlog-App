@@ -1,139 +1,122 @@
 # Nudge ✓
 
-A to-do list built around a specific problem: **you don't open apps, and you don't
-read your notes.** So the list doesn't wait to be opened — it comes to you.
+A to-do app designed around one question: **why does everyone abandon to-do
+apps?** Every mechanic in Nudge is an answer to a specific way these apps fail.
+No account, no server, no subscription — everything stays on your phone.
 
-No account, no server, no subscription. Everything is stored on your phone.
+## The five failure modes, and what Nudge does about them
 
-## The trick
+**1. The list becomes a guilt museum.** Items pile up, opening the app feels
+bad, so you stop opening it. This kills more to-do apps than any missing
+feature. So in Nudge, *nothing rots*: an item untouched for two weeks stops
+being a task and becomes a question — **"Still matters?" / "Let it go"** — and
+either answer makes the list lighter. (Before that, stale items just collect a
+dry remark or two. The wit is capped; the question is the point.)
 
-A website can't send a notification to a closed iPhone unless someone is running
-a push server. Nudge doesn't have one, so it borrows the notifier your phone
-already runs around the clock: **Calendar**.
+**2. Forty visible tasks means acting on none.** Psychologists call it choice
+overload; you know it as scrolling your own list feeling tired. So Nudge's
+Today view is **capped at three picks**. Try to pick a fourth and it refuses:
+*"Three is the limit. That's the point."* Everything else waits in **Later**,
+out of sight. The first pick is styled as **the one that matters** — if you do
+one thing, it's that one.
 
-Give a to-do a time and Nudge writes a calendar file with an alarm attached, and
-hands it to iOS. From then on Calendar raises the alert — on your lock screen, at
-the right moment, whether or not Nudge is installed, open, or online. The alert
-text is the task itself, so **"Call the dentist" appears on your lock screen** and
-you never have to open anything to find out what you were supposed to do.
+**3. Adding a task costs too much effort, so it never gets captured.** An open
+loop you didn't write down follows you around all day (the Zeigarnik effect).
+So capture is near-zero friction: type it, or tap 🎙 and *say* it — the parser
+pulls the time out of the sentence, so **"call mum tomorrow at six"** arrives
+scheduled. **"gym every monday at 7am"** becomes a repeating routine. "Hey
+Siri, add to Nudge" works with the phone still in your pocket (setup below).
 
-Three layers, in order of how hard they are to ignore:
+**4. Finishing is never rewarded — there's always more list.** In Nudge,
+completing anything pops confetti, and completing all your picks **closes the
+day**: *"That's the list. Go be a person."* Permission to stop is the reward.
+The 🔥 streak counts consecutive days you finished *something* — a bar low
+enough to protect, which is the only kind of streak that works. It turns green
+once today's win is banked.
 
-| Layer | What it does | Needs |
-|---|---|---|
-| **Per-task reminders** | A lock-screen alert naming the task, at a time you pick | Adding the event to Calendar once |
-| **Daily nudge** | One repeating alert every day, the backstop for undated items | Adding the event to Calendar once |
-| **Icon badge** | A red count on the Home Screen icon, visible every time you unlock | Added to Home Screen, iOS 16.4+ |
+**5. The app only works if you remember to open it.** Nudge assumes you won't.
+Timed tasks are handed to your phone's **Calendar**, which raises the alert on
+your lock screen with the task as the text — app closed, no push server, no
+subscription. Routines go over once with a repeat rule. The Home Screen icon
+carries a badge with the open count. And one **daily nudge** alert carries your
+list summary and your streak to the lock screen every morning.
 
-Getting things *in* is the other half of the problem — see
-**[Talking instead of typing](#talking-instead-of-typing)** and
-**["Hey Siri, add to Nudge"](#hey-siri-add-to-nudge)** below.
+## The shape of a day
+
+1. **Morning**: the daily nudge fires. You open Nudge to a short question —
+   *"What matters today?"* — and pick up to three from Later. One tap each.
+2. **During the day**: reminders arrive from Calendar at the times you said.
+   Routines ("every day at 9pm") sit in an "Also today" section.
+3. **Anytime a thought strikes**: say it. It lands in Later, not in your face.
+4. **When the third pick is done**: confetti, day closed, streak extended.
+   Yesterday's unfinished picks quietly return to Later — tomorrow starts
+   clean. (The fresh-start effect is real; rollover guilt is how apps die.)
 
 ## Talking instead of typing
-
-Typing is friction, and friction is why things never make it onto the list. So
-there are three ways in, and only one of them involves a keyboard.
-
-**Tap the 🎙 button.** It keeps listening, so you can reel off four things in a
-row without touching the phone again. Each pause becomes its own to-do.
-
-**Say the deadline out loud.** The words are parsed for a time, so one sentence
-does the whole job:
 
 | You say | You get |
 |---|---|
 | "call the dentist tomorrow at six" | *Call the dentist* — tomorrow 18:00 |
 | "take the bins out in 20 minutes" | *Take the bins out* — in 20 minutes |
 | "remind me to pay rent on Monday at 9am" | *Pay rent* — Monday 09:00 |
-| "water the plants in three days" | *Water the plants* — in 3 days, 9am |
-| "book the table tonight" | *Book the table* — 19:00 |
+| "take pills every day at 9pm" | *Take pills* — routine, daily 21:00 |
+| "gym every monday at 7am" | *Gym* — routine, Mondays 07:00 |
 | "buy 2 pints of milk" | *Buy 2 pints of milk* — no time (numbers that aren't times are left alone) |
 
-"Remind me to", "don't forget to" and "I need to" are stripped, because dictation
-always includes them.
-
-A bare hour follows how people actually speak: **1–6 means the evening, 7–11 means
-the morning.** "At five" is 17:00. If the hour has already gone today it rolls to
+Dictation fillers ("remind me to", "don't forget to", "I need to") are
+stripped. A bare hour follows how people speak: **1–6 means evening, 7–11
+means morning** — "at five" is 17:00. An hour that's already gone rolls to
 tomorrow rather than flipping to a time you never said.
+
+The mic keeps listening between sentences, so you can reel off several things
+in one go. iOS Safari drops the speech session every few seconds; Nudge
+restarts it underneath so one tap feels like one long listen.
 
 ## "Hey Siri, add to Nudge"
 
-The zero-friction version — phone in your pocket, never open anything. It takes
-one five-minute setup in the **Shortcuts** app.
+One five-minute setup in the **Shortcuts** app:
 
 1. Open **Shortcuts** → **+** (new shortcut).
-2. Add action: search **"Dictate Text"**. (Set *Stop Listening* → **After Pause**.)
-3. Add action: search **"URL Encode"**, and set its input to the **Dictated Text**
-   variable. This matters — without it, anything you say containing `&` or `#`
-   gets truncated.
-4. Add action: search **"Text"**. Type your app's address followed by `?add=`, then
-   insert the **URL Encoded Text** variable, so it reads:
+2. Add action **"Dictate Text"** (set *Stop Listening* → **After Pause**).
+3. Add action **"URL Encode"** with **Dictated Text** as its input — without
+   this, anything you say containing `&` or `#` gets truncated.
+4. Add action **"Text"**: your app's address plus `?add=`, then the
+   **URL Encoded Text** variable:
    `https://YOUR-PAGES-URL/todo/?add=`**[URL Encoded Text]**
-5. Add action: search **"Open URLs"**, with the **Text** from step 4 as its input.
-6. Tap the shortcut's name at the top, rename it to **"Add to Nudge"**, and tap
-   **Done**.
+5. Add action **"Open URLs"** with that Text as input.
+6. Rename the shortcut **"Add to Nudge"**, tap **Done**.
 
-Now say **"Hey Siri, Add to Nudge"**. Siri asks what to add, you speak, and it
-lands on the list — with the reminder already set if you said a time.
-
-Two honest notes: the phrase has to match the shortcut name, so pick something you
-can say without thinking. And it does flash the app open for a second — iOS gives a
-web app no way to receive data in the background. The *capture* is hands-free; the
-app blinking past is the cost.
-
-## Things left too long get commented on
-
-Anything sitting on the list starts attracting remarks, and they get worse the
-longer you leave it:
-
-| Age | What the app says |
-|---|---|
-| Under a day | Nothing. It's fine. |
-| 1–2 days | *"Still here."* |
-| 3–6 days | *"It isn't going to do itself. Allegedly."* |
-| 1–2 weeks | *"9 days. It lives here now."* |
-| 2 weeks+ | *"It's been here so long it has opinions."* |
-
-Letting a reminder ring and swiping it away costs you a level immediately —
-*"You swiped that one away, didn't you."* The row's border climbs from purple to
-amber to red as it rots, so stale things stop blending into the list.
-
-**The tone follows the reminder onto your lock screen.** The calendar alert is
-written at the moment you send it, so an alarm armed for something ancient arrives
-as `CALL THE DENTIST — day 16.` rather than a polite `Call the dentist`. The daily
-nudge names and shames your worst offender too.
+Say "Hey Siri, Add to Nudge", speak, done — reminder included if you said a
+time. Honest note: the app flashes open for a second (iOS gives a web app no
+background channel); the *capture* is hands-free.
 
 ## Setting it up on an iPhone
 
-1. Open the app in **Safari** (it must be Safari — Chrome on iOS can't install web apps).
-2. Tap **Share → Add to Home Screen**. Put the icon in your dock, beside the apps
-   you actually open.
-3. Open it from the Home Screen icon, not from Safari — the badge only works there.
-4. Add a to-do, tap 🔔, pick a time, tap **Set reminder**.
-5. iOS downloads a small `.ics` file. Tap it (Safari shows it in Downloads, or find
-   it in **Files → Downloads**) and Calendar offers to add it. Tap **Add All**.
-
-Step 5 is a few taps the first time. After that the alert is entirely out of your
-hands — it fires whether or not you ever open Nudge again.
-
-**Tip:** set several reminders first, then use **Send all** to hand them over in one
-go instead of one file at a time.
+1. Open the app in **Safari** (Chrome on iOS can't install web apps).
+2. **Share → Add to Home Screen.** Put it in your dock.
+3. Open it from the icon — the badge only works from the Home Screen app.
+4. When you set a reminder, iOS downloads a small `.ics` file. Tap it (in
+   Downloads or Files) and Calendar offers **Add All**. That's the hand-off:
+   from then on the alert fires with the app closed, forever.
+5. **Send all** hands over every pending reminder in one file — set a few, then
+   do one trip to Calendar.
 
 ## Things worth knowing
 
-- **Completing a task doesn't delete its calendar alert.** Nudge writes the event
-  and lets go of it; there's no way for a static site to reach back into your
-  calendar. If a reminder fires for something you've already done, dismiss it. To
-  stop it in advance, delete the event in Calendar.
-- The same goes for the daily nudge: turning it off in Nudge stops Nudge tracking
-  it, but you delete the repeating event in Calendar to actually silence it.
-- Reminders use **floating time** — 9am stays 9am if you change time zone.
-- Re-sending a reminder for the same task updates the existing calendar event
-  rather than creating a duplicate (the events carry stable UIDs).
-- An amber `⚠︎ … not sent` chip means the time is saved in Nudge but never made it
-  to Calendar — so nothing will actually alert you. Tap it to send it.
-- Your list lives in this browser's local storage on this device. Clearing Safari's
-  website data erases it, and there's no sync or backup.
+- **Completing a task doesn't remove its calendar alert** — a static site
+  can't reach into your calendar. Dismiss the alert, or delete the event in
+  Calendar. Same for routines and the daily nudge: turning them off in Nudge
+  stops Nudge tracking them; deleting the calendar event silences them.
+- An amber `⚠︎ … not sent` chip means a time is saved in Nudge but was never
+  handed to Calendar — nothing will actually ring. Tap it to send it.
+- "Let it go" archives (nothing is truly deleted except via the Done list),
+  but there's deliberately no browsing UI for the archive. It's gone. That's
+  the feature.
+- Reminders use floating local time — 9am stays 9am across time zones.
+- Stable calendar UIDs mean re-sending a reminder updates the existing event
+  instead of duplicating it.
+- Your list lives in this browser's local storage. Clearing Safari website
+  data erases it; there's no sync or backup.
 
 ## Running it
 
@@ -144,32 +127,33 @@ npx serve .
 # then open http://localhost:3000/todo/
 ```
 
-To deploy, any static host works. For GitHub Pages: **Settings → Pages → Deploy
-from branch**, pick the branch and `/ (root)`, then visit `<pages-url>/todo/`.
+Deploy on any static host. GitHub Pages: **Settings → Pages → Deploy from
+branch**, pick the branch and `/ (root)`, then visit `<pages-url>/todo/`.
 
 ## How it's put together
 
-- `js/store.js` — the list, in `localStorage`, with a subscribe/render loop.
-- `js/ics.js` — iCalendar (RFC 5545) generation: escaping, 75-octet line folding
-  that won't split an emoji in half, `VALARM` blocks, and the hand-off to iOS via
-  the share sheet with a download fallback.
-- `js/when.js` — pulls a time out of ordinary speech, and leaves numbers that
-  aren't times alone.
-- `js/voice.js` — speech capture, including restarting the engine when iOS Safari
-  drops the session every few seconds so one tap feels like one long listen.
-- `js/sass.js` — the escalation ladder: how stale a task is, what to say about it,
-  and how that reads on a lock screen.
-- `js/app.js` — rendering, the reminder sheets, and the Home Screen badge.
-- `sw.js` — caches the shell so it opens instantly and works offline.
+- `js/store.js` — the data model *is* the product opinion: picks capped at
+  three, the two-week staleness clock, streak rules, fresh-start day
+  boundaries, v1→v2 migration.
+- `js/when.js` — natural-language times and routines from ordinary speech.
+- `js/voice.js` — continuous speech capture with iOS session-restart.
+- `js/ics.js` — RFC 5545 generation: escaping, 75-octet folding that won't
+  split an emoji, `VALARM` blocks, `RRULE` for routines, share-sheet hand-off
+  with download fallback.
+- `js/sass.js` — the (capped) commentary and the lock-screen alert tone.
+- `js/confetti.js` — the completion dopamine, canvas-only, respects
+  `prefers-reduced-motion`.
+- `js/app.js` — rendering, triage, sheets, badge, Siri URL capture.
+- `sw.js` — offline shell cache.
 
-Typed input, voice input and the Siri hand-off all converge on one `capture()`
-function, so they can't drift apart in behaviour.
+Typed input, voice input, and the Siri hand-off all converge on one
+`capture()` function, so they can't drift apart in behaviour.
 
 ## Browser support
 
-- **iOS Safari 16.4+** — everything, once added to the Home Screen. Voice needs
-  14.5+ and asks for microphone permission the first time.
-- **Android Chrome** — everything; Calendar hand-off goes through the share sheet.
-- **Desktop** — works, and the `.ics` files import into any calendar app.
-- Where speech recognition is missing, the 🎙 button hides itself and typing is
+- **iOS Safari 16.4+** — everything, once added to the Home Screen. Voice
+  needs 14.5+ and asks for mic permission once.
+- **Android Chrome** — everything; Calendar hand-off via the share sheet.
+- **Desktop** — works; the `.ics` files import into any calendar app.
+- Where speech recognition is missing the 🎙 hides itself; typing is
   unaffected.

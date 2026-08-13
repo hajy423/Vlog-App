@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#12101c">
-  <meta name="description" content="A to-do list that comes to you: reminders land on your lock screen through the Calendar app, and the home-screen icon carries a live count.">
+  <meta name="description" content="A to-do app built on how people actually behave: pick three things a day, say tasks out loud, reminders reach your lock screen, and old items face a question instead of rotting.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Nudge">
@@ -20,6 +20,9 @@
     <div class="header-main">
       <h1>Nudge</h1>
       <p id="summary" class="summary">Nothing on the list</p>
+    </div>
+    <div id="streak" class="streak hidden" title="Days in a row you finished something">
+      <span class="streak-flame">🔥</span><span id="streak-count">0</span>
     </div>
     <button id="btn-help" class="icon-btn" aria-label="How this works">?</button>
   </header>
@@ -43,13 +46,51 @@
     <button id="btn-mic-stop" class="listening-stop" type="button">Stop</button>
   </div>
 
-  <main class="list-wrap">
-    <ul id="open-list" class="task-list"></ul>
+  <nav class="tabs" role="tablist">
+    <button id="tab-today" class="tab active" role="tab" aria-selected="true">Today</button>
+    <button id="tab-later" class="tab" role="tab" aria-selected="false">Later <span id="later-count" class="tab-count hidden">0</span></button>
+  </nav>
 
-    <div id="empty-state" class="empty-state hidden">
+  <!-- ============ TODAY ============ -->
+  <main id="view-today" class="view">
+
+    <section id="picks-section" class="hidden">
+      <h2 class="section-title">Your three</h2>
+      <ul id="picks-list" class="task-list picks"></ul>
+      <button id="btn-pick-more" class="pick-more-btn hidden">+ Pick another from Later</button>
+    </section>
+
+    <!-- Morning triage: stays open until three are chosen or you say you're done. -->
+    <section id="triage" class="triage hidden">
+      <h2 id="triage-title">What matters today?</h2>
+      <p id="triage-sub" class="triage-sub">Pick up to three. Not ten — three. The rest waits in Later, out of sight.</p>
+      <ul id="triage-list" class="triage-list"></ul>
+      <p id="triage-empty" class="triage-empty hidden">Nothing waiting in Later. Add something above — or enjoy the silence.</p>
+      <button id="btn-triage-done" class="text-btn triage-done hidden">That's enough for one day →</button>
+    </section>
+
+    <!-- All picks finished: the day closes. This screen is the product. -->
+    <section id="day-done" class="day-done hidden">
+      <p class="day-done-mark">🎉</p>
+      <h2>That's the list.</h2>
+      <p id="day-done-sub" class="day-done-sub">Everything you picked is done. Go be a person.</p>
+      <button id="btn-one-more" class="text-btn">…pick one more, if you must</button>
+    </section>
+
+    <section id="also-section" class="hidden">
+      <h2 class="section-title">Also today</h2>
+      <ul id="also-list" class="task-list"></ul>
+    </section>
+  </main>
+
+  <!-- ============ LATER ============ -->
+  <main id="view-later" class="view hidden">
+    <ul id="later-list" class="task-list"></ul>
+
+    <div id="later-empty" class="empty-state hidden">
       <p class="empty-mark">✓</p>
-      <p>Nothing left to do.</p>
-      <p class="empty-sub">Add something above — then give it a time, and your phone will bring it to you.</p>
+      <p>Nothing waiting.</p>
+      <p class="empty-sub">Everything is either happening today or doesn't exist yet.</p>
     </div>
 
     <section id="done-section" class="done-section hidden">
@@ -108,13 +149,14 @@
     </div>
   </div>
 
-  <!-- ============ DAILY CHECK-IN SHEET ============ -->
+  <!-- ============ DAILY NUDGE SHEET ============ -->
   <div id="daily-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="daily-title">
     <div class="sheet-body">
-      <h2 id="daily-title">Daily check-in</h2>
+      <h2 id="daily-title">Daily nudge</h2>
       <p class="sheet-lead">
         One repeating calendar alert, every day, forever. It's the backstop for
-        everything on the list that has no time of its own.
+        everything on the list that has no time of its own — and it carries your
+        streak, so the number you're protecting is the first thing you see.
       </p>
 
       <label class="field-label" for="daily-time">Every day at</label>
@@ -135,17 +177,16 @@
   <!-- ============ HELP SHEET ============ -->
   <div id="help-sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="help-title">
     <div class="sheet-body">
-      <h2 id="help-title">How this reaches you</h2>
+      <h2 id="help-title">How this works</h2>
 
       <div class="help-item">
         <span class="help-num">1</span>
         <div>
-          <strong>Calendar does the shouting</strong>
+          <strong>Get it out of your head, instantly</strong>
           <p>
-            A website can't raise an alert on a closed iPhone. Calendar can, and
-            it's always running. Give a to-do a time and Nudge hands it over as a
-            calendar alert — the reminder that lights up your lock screen says the
-            task itself, so you never have to open anything.
+            Type it, or tap 🎙 and say it — <em>"call mum tomorrow at six"</em> sets
+            the reminder in the same breath. Routines work too: <em>"gym every
+            monday at 7am"</em>. New things land in <b>Later</b>, not in your face.
           </p>
         </div>
       </div>
@@ -153,11 +194,11 @@
       <div class="help-item">
         <span class="help-num">2</span>
         <div>
-          <strong>The icon keeps score</strong>
+          <strong>Pick three. That's the day.</strong>
           <p>
-            Add Nudge to your Home Screen and its icon carries a red badge with
-            the number of open items. It sits there every time you unlock your
-            phone, no notification required.
+            Each morning you choose up to three things — the first one is the one
+            that matters. Finish them and the app tells you you're <em>done</em>.
+            Not "here's forty more". Done.
           </p>
         </div>
       </div>
@@ -165,11 +206,11 @@
       <div class="help-item">
         <span class="help-num">3</span>
         <div>
-          <strong>Talk instead of typing</strong>
+          <strong>Reminders come to you</strong>
           <p>
-            Tap 🎙 and just say it. It keeps listening, so you can reel off several
-            in a row. Say the time out loud too — <em>"call mum tomorrow at six"</em>
-            — and the reminder is set in the same breath.
+            Timed tasks are handed to your phone's Calendar, which raises the alert
+            on your lock screen — app closed, phone in pocket. The Home Screen icon
+            carries a badge with your open count.
           </p>
         </div>
       </div>
@@ -177,10 +218,10 @@
       <div class="help-item">
         <span class="help-num">4</span>
         <div>
-          <strong>Or don't even open it</strong>
+          <strong>Finish anything, keep the flame</strong>
           <p>
-            Set up a Siri phrase once and you can say <em>"Hey Siri, add to Nudge"</em>
-            with the phone in your pocket. Steps are in the README.
+            🔥 counts days in a row you completed <em>something</em>. One small win
+            protects it. Miss a whole day and it resets — that's the deal.
           </p>
         </div>
       </div>
@@ -188,22 +229,19 @@
       <div class="help-item">
         <span class="help-num">5</span>
         <div>
-          <strong>Put it where your thumb already goes</strong>
+          <strong>Nothing rots here</strong>
           <p>
-            In Safari, tap Share → Add to Home Screen. Drop the icon in your dock,
-            next to the apps you <em>do</em> open.
+            Things left sitting get commented on — and after two weeks untouched,
+            the app stops nagging and asks one question: still matters, or let it
+            go? A list you're not scared to open is one you'll actually use.
           </p>
         </div>
       </div>
 
       <p class="sheet-note">
-        Fair warning: things left sitting on the list get commented on, and the
-        remarks get worse the longer you leave them.
-      </p>
-
-      <p class="sheet-note">
-        Everything is stored on this device only. Nothing is uploaded, and there's
-        no account.
+        Everything stays on this device. No account, no server, no sync. Add it to
+        your Home Screen (Safari → Share → Add to Home Screen) for the badge and
+        full-screen app. "Hey Siri, add to Nudge" setup is in the README.
       </p>
 
       <div class="sheet-actions">
@@ -212,7 +250,7 @@
     </div>
   </div>
 
-  <div id="toast" class="toast hidden"></div>
+  <div id="toast" class="toast hidden"><span id="toast-text"></span><button id="toast-action" class="toast-action hidden"></button></div>
 
   <script type="module" src="./js/app.js"></script>
 </body>

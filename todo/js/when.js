@@ -92,11 +92,60 @@ const cut = (text, start, end) => (text.slice(0, start) + ' ' + text.slice(end))
 /**
  * @param {string} input  what the user said or typed
  * @param {Date}   [now]  injectable for tests
- * @returns {{text: string, remindAt: number|null}}
+ * @returns {{text: string, remindAt: number|null, repeat: {freq:'daily'|'weekly', day?:number}|null}}
  */
 export function parseWhen(input, now = new Date()) {
   let text = String(input).replace(FILLERS, '').trim();
   let when = null;
+  let repeat = null;
+
+  // --- "every day" / "every morning" / "every monday" ----------------------
+  // Routines carry a repeat spec; the calendar side turns it into an RRULE so
+  // one hand-off covers every future firing.
+  const everyRe = new RegExp(
+    String.raw`\b(?:every|each)\s+(day|morning|evening|night|week|${DAYS.join('|')})\b`,
+    'i'
+  );
+  const every = text.match(everyRe);
+  if (every) {
+    const what = every[1].toLowerCase();
+    const start = new Date(now);
+    start.setSeconds(0, 0);
+    if (what === 'day' || what === 'morning') {
+      repeat = { freq: 'daily' };
+      start.setHours(9, 0, 0, 0);
+    } else if (what === 'evening') {
+      repeat = { freq: 'daily' };
+      start.setHours(19, 0, 0, 0);
+    } else if (what === 'night') {
+      repeat = { freq: 'daily' };
+      start.setHours(20, 0, 0, 0);
+    } else if (what === 'week') {
+      repeat = { freq: 'weekly', day: start.getDay() };
+      start.setHours(9, 0, 0, 0);
+      if (start.getTime() <= now.getTime()) start.setDate(start.getDate() + 7);
+    } else {
+      const day = DAYS.indexOf(what);
+      repeat = { freq: 'weekly', day };
+      const delta = (day - start.getDay() + 7) % 7;
+      start.setDate(start.getDate() + delta);
+      start.setHours(9, 0, 0, 0);
+    }
+    text = cut(text, every.index, every.index + every[0].length);
+
+    // An explicit time in the sentence overrides the default hour.
+    const time = matchTime(text, false);
+    if (time) {
+      start.setHours(resolveHour(time.hour, time.meridiem), time.minute, 0, 0);
+      text = cut(text, time.start, time.end);
+    }
+    // The first firing must be in the future.
+    while (start.getTime() <= now.getTime()) {
+      start.setDate(start.getDate() + (repeat.freq === 'daily' ? 1 : 7));
+    }
+
+    return { text: tidy(text), remindAt: start.getTime(), repeat };
+  }
 
   // --- "in 20 minutes" / "in a couple of hours" ----------------------------
   const relRe = new RegExp(
@@ -189,17 +238,31 @@ export function parseWhen(input, now = new Date()) {
 
   if (!when && anchor) when = anchor;
 
-  // Tidy up whatever's left of the sentence.
-  text = text
+  return {
+    text: tidy(text),
+    remindAt: when && when.getTime() > now.getTime() ? when.getTime() : null,
+    repeat: null,
+  };
+}
+
+/** Tidy up whatever's left of the sentence once the time words are gone. */
+function tidy(text) {
+  let t = text
     .replace(/\s+/g, ' ')
     .replace(/^(?:to|and|then|please|by|on|at|for)\s+/i, '')
     .replace(/\s+(?:at|on|by|to|and|then)$/i, '')
     .replace(/[\s,;.]+$/, '')
     .trim();
-  if (text) text = text[0].toUpperCase() + text.slice(1);
+  if (t) t = t[0].toUpperCase() + t.slice(1);
+  return t;
+}
 
-  return {
-    text,
-    remindAt: when && when.getTime() > now.getTime() ? when.getTime() : null,
-  };
+/** When a routine is completed, roll its reminder to the next firing. */
+export function nextOccurrence(remindAt, repeat, now = new Date()) {
+  const next = new Date(remindAt);
+  const step = repeat.freq === 'daily' ? 1 : 7;
+  do {
+    next.setDate(next.getDate() + step);
+  } while (next.getTime() <= now.getTime());
+  return next.getTime();
 }

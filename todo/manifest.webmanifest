@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Nudge",
   "short_name": "Nudge",
-  "description": "A to-do list that comes to you: reminders arrive via your phone's Calendar and the home-screen icon carries a live count of what's open.",
+  "description": "A to-do app built on how people actually behave: pick three things a day, say tasks out loud, reminders reach your lock screen through Calendar, and old items face a question instead of rotting.",
   "categories": ["productivity", "utilities", "lifestyle"],
   "start_url": "./index.html",
   "scope": "./",

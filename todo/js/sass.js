@@ -114,18 +114,26 @@ export function sassyAlert(task, now = Date.now()) {
 
 /**
  * Summary for the daily calendar nudge. Names the worst offender, so the
- * repeating alert says something different as things rot.
+ * repeating alert says something different as things rot — and carries the
+ * streak, because a number you're protecting belongs on the lock screen.
  */
-export function dailySummary(openTasks, now = Date.now()) {
+export function dailySummary(openTasks, streak = 0, now = Date.now()) {
+  const flame = streak >= 2 ? ` · 🔥 ${streak} days` : '';
   const count = openTasks.length;
-  if (count === 0) return 'Your list is empty. Suspicious.';
+  if (count === 0) return `Your list is empty. Suspicious.${flame}`;
 
   const worst = openTasks.reduce((a, b) => (sassLevel(b, now) > sassLevel(a, now) ? b : a));
   const level = sassLevel(worst, now);
   const things = `${count} thing${count === 1 ? '' : 's'} open`;
 
-  if (level <= 1) return `Your list — ${things}`;
-  if (level === 2) return `Your list — ${things}, oldest is ${ageInDays(worst, now)} days`;
-  if (level === 3) return `Your list — ${things}. "${worst.text}" is getting comfortable.`;
-  return `Your list — ${things}. "${worst.text}" has been there ${ageInDays(worst, now)} days.`;
+  if (level <= 1) return `Your list — ${things}${flame}`;
+  if (level === 2) return `Your list — ${things}, oldest is ${ageInDays(worst, now)} days${flame}`;
+  if (level === 3) return `Your list — ${things}. "${worst.text}" is getting comfortable.${flame}`;
+  return `Your list — ${things}. "${worst.text}" has been there ${ageInDays(worst, now)} days.${flame}`;
+}
+
+/** What the two-week question asks, in the app's voice. */
+export function sweepQuestion(task, now = Date.now()) {
+  const days = ageInDays(task, now);
+  return `${days} days untouched. Does this still matter?`;
 }

@@ -1,7 +1,7 @@
 // Service worker: caches the app shell so the installed PWA opens instantly and
 // works with no connection. The list itself lives in localStorage, so once the
 // shell is cached the app is fully offline.
-const CACHE = 'nudge-v2';
+const CACHE = 'nudge-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const ASSETS = [
   './js/when.js',
   './js/sass.js',
   './js/voice.js',
+  './js/confetti.js',
   './manifest.webmanifest',
   './icons/icon-180.png',
   './icons/icon-192.png',

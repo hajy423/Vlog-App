@@ -86,6 +86,70 @@ body.sheet-open {
   cursor: pointer;
 }
 
+.streak {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(240, 180, 41, 0.4);
+  background: rgba(240, 180, 41, 0.12);
+  font-size: 15px;
+  font-weight: 700;
+  color: #f5cd72;
+}
+
+/* Today's win is banked: the flame stops asking for anything. */
+.streak-safe {
+  border-color: rgba(74, 222, 128, 0.45);
+  background: rgba(74, 222, 128, 0.1);
+  color: #86efac;
+}
+
+/* -------------------------------------------------------------------- tabs */
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin: 0 20px 14px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 0;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: var(--text-dim);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: var(--bg-input);
+  color: var(--text);
+}
+
+.tab-count {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(139, 92, 246, 0.25);
+  color: #c4b1ff;
+  font-size: 12px;
+}
+
 /* -------------------------------------------------------------- add a task */
 
 .add-form {
@@ -221,10 +285,233 @@ body.sheet-open {
   }
 }
 
-/* ------------------------------------------------------------------- lists */
+/* ------------------------------------------------------------------- views */
 
-.list-wrap {
+.view {
   padding: 0 20px;
+}
+
+.section-title {
+  margin: 18px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-dim);
+}
+
+.view > section:first-child .section-title,
+#picks-section .section-title {
+  margin-top: 4px;
+}
+
+/* ------------------------------------------------------------------ triage */
+
+.triage {
+  padding: 18px 16px;
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.triage h2 {
+  margin: 0 0 4px;
+  font-size: 19px;
+}
+
+.triage-sub {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.triage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.triage-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: var(--bg-input);
+}
+
+.triage-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.triage-meta {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.triage-pick {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.triage-empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.triage-done {
+  margin-top: 10px;
+}
+
+#picks-section + .triage {
+  margin-top: 16px;
+}
+
+/* ------------------------------------------------------------------- picks */
+
+.task.pick {
+  border-color: rgba(139, 92, 246, 0.35);
+}
+
+.task.main-pick {
+  border-color: var(--accent);
+  background: rgba(139, 92, 246, 0.1);
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.main-pick .task-text {
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.main-tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #c4b1ff;
+}
+
+.task.finished {
+  opacity: 0.55;
+}
+
+.task.finished .task-text {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+
+.task-check.checked {
+  border-color: var(--accent);
+  background: var(--accent);
+  position: relative;
+}
+
+.task-check.checked::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.pick-more-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--text-dim);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- day done */
+
+.day-done {
+  text-align: center;
+  padding: 44px 24px 28px;
+}
+
+.day-done-mark {
+  margin: 0 0 6px;
+  font-size: 52px;
+}
+
+.day-done h2 {
+  margin: 0 0 8px;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+}
+
+.day-done-sub {
+  margin: 0 auto 18px;
+  max-width: 34ch;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------- stale row */
+
+.task.stale {
+  border-color: rgba(240, 180, 41, 0.45);
+  background: rgba(240, 180, 41, 0.06);
+}
+
+.stale-question {
+  font-size: 13px;
+  color: #f5cd72;
+}
+
+.stale-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.stale-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.stale-btn.keep {
+  background: rgba(139, 92, 246, 0.22);
+  color: #c4b1ff;
+}
+
+.stale-btn.letgo {
+  background: rgba(244, 97, 79, 0.16);
+  color: #ff9d8e;
 }
 
 .task-list {
@@ -297,15 +584,10 @@ body.sheet-open {
   text-decoration: line-through;
 }
 
-/* Escalation: the longer something sits, the harder it is to scroll past. */
+/* Light escalation. Wit is capped at two levels here — past two weeks the row
+   stops being a roast and becomes the keep-or-let-go question instead. */
 .task.sass-1 { border-color: rgba(139, 92, 246, 0.22); }
 .task.sass-2 { border-color: rgba(240, 180, 41, 0.32); }
-.task.sass-3 { border-color: rgba(244, 97, 79, 0.42); }
-
-.task.sass-4 {
-  border-color: var(--danger);
-  background: rgba(244, 97, 79, 0.09);
-}
 
 .task-sass {
   font-size: 12.5px;
@@ -314,12 +596,9 @@ body.sheet-open {
   overflow-wrap: anywhere;
 }
 
-.sass-3 .task-sass { color: #ffab9e; }
-
-.sass-4 .task-sass {
-  color: #ff9d8e;
-  font-weight: 600;
-  font-style: normal;
+.task-when.routine {
+  background: rgba(56, 189, 248, 0.16);
+  color: #7dd3fc;
 }
 
 .task-when {
@@ -652,6 +931,9 @@ body.sheet-open {
   bottom: calc(110px + var(--safe-bottom));
   transform: translateX(-50%);
   z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   max-width: calc(100vw - 40px);
   padding: 12px 18px;
   border-radius: 999px;
@@ -663,11 +945,30 @@ body.sheet-open {
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
 }
 
+.toast-action {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border: none;
+  border-radius: 999px;
+  background: #1a1430;
+  color: #ede9fb;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
 @media (min-width: 640px) {
   .app-header,
   .add-form,
-  .list-wrap {
+  .listening,
+  .view {
     max-width: 560px;
+    margin-inline: auto;
+  }
+
+  .tabs {
+    max-width: 520px;
     margin-inline: auto;
   }
 

@@ -116,6 +116,12 @@ function calendar(eventLines) {
   return lines.map(fold).join('\r\n') + '\r\n';
 }
 
+/** RRULE for a routine, so one hand-off covers every future firing. */
+function repeatRule(repeat) {
+  if (!repeat) return undefined;
+  return repeat.freq === 'daily' ? 'FREQ=DAILY' : 'FREQ=WEEKLY';
+}
+
 /** A single task's reminder — the alert text is the task itself. */
 export function taskIcs(task) {
   return calendar(
@@ -124,6 +130,7 @@ export function taskIcs(task) {
       start: new Date(task.remindAt),
       summary: task.text,
       description: 'From your Nudge list.',
+      rrule: repeatRule(task.repeat),
     })
   );
 }
@@ -158,6 +165,7 @@ export function allRemindersIcs(tasks) {
       start: new Date(task.remindAt),
       summary: task.text,
       description: 'From your Nudge list.',
+      rrule: repeatRule(task.repeat),
       stamp,
     })
   );
