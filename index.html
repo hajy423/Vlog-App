@@ -15,12 +15,42 @@
 </head>
 <body>
 
+  <!-- ============ SHOOT SCREEN (guided shot list) ============ -->
+  <section id="screen-shoot" class="screen active">
+    <header class="shoot-header">
+      <div>
+        <h1 id="recipe-title">Hotel room video</h1>
+        <p id="recipe-subtitle" class="recipe-subtitle"></p>
+      </div>
+      <div class="shoot-progress">
+        <span id="shoot-count">0/11</span>
+        <div class="progress-bar slim"><div id="shoot-progress-fill" class="progress-bar-fill"></div></div>
+      </div>
+    </header>
+
+    <div id="shot-list" class="shot-list"></div>
+
+    <div class="stitch-bar">
+      <button id="btn-reset-shoot" class="btn">Start over</button>
+      <button id="btn-build" class="btn btn-primary" disabled>🎬 Build my video</button>
+    </div>
+  </section>
+
   <!-- ============ RECORD SCREEN ============ -->
-  <section id="screen-record" class="screen active">
+  <section id="screen-record" class="screen">
     <div id="camera-wrap" class="camera-wrap mode-vertical">
       <div id="preview-box">
         <video id="preview" autoplay playsinline muted></video>
         <div id="live-timestamp" class="live-timestamp">--:--</div>
+        <div id="shot-guide" class="shot-guide hidden"></div>
+      </div>
+
+      <div id="shot-banner" class="shot-banner hidden">
+        <button id="btn-exit-guide" class="shot-banner-close" aria-label="Leave guided shoot">✕</button>
+        <span id="shot-step" class="shot-step"></span>
+        <h2 id="shot-title"></h2>
+        <p id="shot-direction"></p>
+        <p id="shot-why" class="shot-why"></p>
       </div>
       <div id="camera-error" class="camera-error hidden">
         <p>📷</p>
@@ -82,9 +112,36 @@
 
   <!-- ============ BOTTOM NAV ============ -->
   <nav class="bottom-nav">
-    <button data-screen="screen-record" class="nav-btn active"><span class="nav-icon">●</span>Record</button>
+    <button data-screen="screen-shoot" class="nav-btn active"><span class="nav-icon">🎬</span>Shoot</button>
+    <button data-screen="screen-record" class="nav-btn"><span class="nav-icon">●</span>Record</button>
     <button data-screen="screen-clips" class="nav-btn"><span class="nav-icon">▦</span>Clips</button>
   </nav>
+
+  <!-- ============ BUILD MODAL (hook + music) ============ -->
+  <div id="build-modal" class="modal hidden">
+    <div class="modal-body">
+      <h2>Two last things</h2>
+
+      <label class="field-label" for="hook-input">Hook — burned onto the opening</label>
+      <input id="hook-input" class="field-input" type="text" maxlength="60" autocomplete="off">
+      <p id="hook-help" class="field-help"></p>
+
+      <label class="field-label" for="music-input">Music (optional)</label>
+      <input id="music-input" class="field-input" type="file" accept="audio/*">
+      <p id="music-name" class="field-help">Sits under your clip audio, and ducks under the keycard and the curtain pull.</p>
+
+      <div id="music-level-row" class="field-row hidden">
+        <label class="field-label" for="music-level">Music level</label>
+        <input id="music-level" type="range" min="10" max="60" value="28">
+        <span id="music-level-value">28%</span>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-build-go" class="btn btn-primary">Build it</button>
+        <button id="btn-close-build" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ============ PLAYER (full screen) ============ -->
   <div id="player-modal" class="player-modal hidden">

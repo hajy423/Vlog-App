@@ -67,6 +67,8 @@ export class Recorder {
     this.recording = false;
     this.mode = 'vertical';
     this.zoom = 1;
+    // The HH:MM stamp is a vlog flourish — guided shoots turn it off.
+    this.showTimestamp = true;
     // Which way the phone is turned in horizontal-rotated mode:
     // +1 = top of the phone to the left, -1 = top to the right.
     this.rotationDir = 1;
@@ -149,11 +151,13 @@ export class Recorder {
    * Record a clip with the timestamp burned in.
    * Resolves with {blob, mime, thumb, duration, createdAt} when recording stops.
    * @param {(elapsedMs: number) => void} onTick progress callback
+   * @param {{maxMs?: number}} opts hard cap on clip length (default MAX_MS)
    * @returns {{stop: () => void, done: Promise}}
    */
-  record(onTick) {
+  record(onTick, opts = {}) {
     if (!this.stream || this.recording) throw new Error('Camera not ready');
     this.recording = true;
+    const maxMs = Math.max(MIN_MS, opts.maxMs || MAX_MS);
 
     const video = this.videoEl;
     const out = this.mode === 'vertical' ? OUTPUT.portrait : OUTPUT.landscape;
@@ -199,7 +203,7 @@ export class Recorder {
       }
       ctx.restore();
 
-      drawTimestamp(ctx, out.w, out.h, formatClock());
+      if (this.showTimestamp) drawTimestamp(ctx, out.w, out.h, formatClock());
       rafId = requestAnimationFrame(paint);
     };
     paint();
@@ -251,7 +255,7 @@ export class Recorder {
       if (recorder.state !== 'inactive') recorder.stop();
     };
 
-    const maxTimer = setTimeout(stop, MAX_MS);
+    const maxTimer = setTimeout(stop, maxMs);
 
     const done = new Promise((resolve, reject) => {
       recorder.onerror = (e) => {
@@ -259,7 +263,7 @@ export class Recorder {
         reject(e.error || new Error('Recording failed'));
       };
       recorder.onstop = () => {
-        const duration = Math.min(performance.now() - startedAt, MAX_MS);
+        const duration = Math.min(performance.now() - startedAt, maxMs);
         cleanup();
         const blob = new Blob(chunks, { type: mime || 'video/webm' });
         resolve({ blob, mime: blob.type, thumb, duration, createdAt });
