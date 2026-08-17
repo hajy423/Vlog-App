@@ -1,5 +1,5 @@
 // Service worker: caches the app shell so the installed PWA opens offline.
-const CACHE = 'vlog-app-v5';
+const CACHE = 'vlog-app-v6';
 const ASSETS = [
   './',
   './index.html',

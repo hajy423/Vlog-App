@@ -20,7 +20,7 @@ let activeRecording = null;
 /* ============ Free / Pro ============ */
 // Change APP_NAME once the final name is chosen — it's the free-plan watermark.
 const APP_NAME = 'Daily Vlog';
-const FREE_STITCH_LIMIT = 15;
+const FREE_STITCH_LIMIT = 10;
 const PRO_KEY = 'vlog-pro';
 
 const isPro = () => localStorage.getItem(PRO_KEY) === '1';
